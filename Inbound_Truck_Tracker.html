@@ -271,24 +271,24 @@ var store={
 
 /* ── default PO data from FL-012 ── */
 var DEFAULT_POS=[
-  {id:"po750", po:"750", vendor:"Illy",     desc:"",                     eta:"2026-05-01", conf:"tentative", status:"pending", arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:""},
-  {id:"po751", po:"751", vendor:"Illy",     desc:"",                     eta:"2026-05-04", conf:"tentative", status:"pending", arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:""},
-  {id:"po769", po:"769", vendor:"EA",       desc:"12 Pallets",           eta:"2026-06-01", conf:"tentative", status:"pending", arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:""},
-  {id:"po770", po:"770", vendor:"Illy",     desc:"WB Class",             eta:"2026-06-08", conf:"tentative", status:"pending", arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:""},
-  {id:"po771", po:"771", vendor:"Illy",     desc:"5 GC SKUs",            eta:"2026-06-08", conf:"tentative", status:"pending", arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:""},
-  {id:"po772", po:"772", vendor:"Illy",     desc:"NC + IE/ESE/IC",       eta:"2026-06-12", conf:"tentative", status:"pending", arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:""},
-  {id:"po773", po:"773", vendor:"Illy",     desc:"WB + GC",              eta:"2026-06-12", conf:"tentative", status:"pending", arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:""},
-  {id:"po774", po:"774", vendor:"Illy",     desc:"KC 32CT CLASS pure",   eta:"2026-06-15", conf:"tentative", status:"pending", arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:""},
-  {id:"po775", po:"775", vendor:"Illy",     desc:"KC 32CT + 20CT",       eta:"2026-06-15", conf:"tentative", status:"pending", arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:""},
-  {id:"po776", po:"776", vendor:"Illy",     desc:"KC + RTD",             eta:"2026-06-19", conf:"tentative", status:"pending", arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:""},
-  {id:"po777", po:"777", vendor:"Illy",     desc:"WB CLASS rem + INTEN", eta:"2026-06-19", conf:"tentative", status:"pending", arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:""},
-  {id:"po778", po:"778", vendor:"Kennys",   desc:"27 pallets",           eta:"2026-06-08", conf:"tentative", status:"pending", arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:""},
-  {id:"po779", po:"779", vendor:"Finleys",  desc:"2 pallets",            eta:"2026-06-08", conf:"tentative", status:"pending", arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:""},
-  {id:"po780", po:"780", vendor:"EA",       desc:"11 plts",              eta:"2026-06-10", conf:"tentative", status:"pending", arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:""},
-  {id:"po712", po:"712", vendor:"SureFire", desc:"",                     eta:null,         conf:"tbd",       status:"pending", arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:""},
-  {id:"po722", po:"722", vendor:"SureFire", desc:"",                     eta:null,         conf:"tbd",       status:"pending", arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:""},
-  {id:"po723", po:"723", vendor:"SureFire", desc:"Remainder",            eta:null,         conf:"tbd",       status:"pending", arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:""},
-  {id:"po736", po:"736", vendor:"SureFire", desc:"4k Bulk Flashlight",   eta:null,         conf:"tbd",       status:"pending", arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:""}
+  {id:"po750", po:"750", vendor:"Illy",     desc:"60 PALLETS",             eta:"2026-06-04", conf:"confirmed",  status:"complete",  arrivedAt:"2026-06-04T06:00:00", completedAt:"2026-06-04T08:00:00", dock:"", notes:"",arrivalWindow:"06:00"},
+  {id:"po769", po:"769", vendor:"EA",       desc:"12 Pallets",             eta:"2026-06-05", conf:"confirmed",  status:"transit",   arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:"06:00"},
+  {id:"po751", po:"751", vendor:"Illy",     desc:"60 Pallets",             eta:"2026-06-08", conf:"confirmed",  status:"transit",   arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:"06:00"},
+  {id:"po770", po:"770", vendor:"Illy",     desc:"WB Class",               eta:"2026-06-08", conf:"tentative",  status:"pending",   arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:""},
+  {id:"po771", po:"771", vendor:"Illy",     desc:"5 GC SKUs- 60 PALLETS",  eta:"2026-06-08", conf:"confirmed",  status:"confirmed", arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:"08:00"},
+  {id:"po778", po:"778", vendor:"Kennys",   desc:"25 pallets",             eta:"2026-06-08", conf:"confirmed",  status:"confirmed", arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:""},
+  {id:"po779", po:"779", vendor:"Finleys",  desc:"2 pallets- with PO 779", eta:"2026-06-08", conf:"confirmed",  status:"confirmed", arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:""},
+  {id:"po780", po:"780", vendor:"EA",       desc:"11 plts",                eta:"2026-06-10", conf:"tentative",  status:"pending",   arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:""},
+  {id:"po772", po:"772", vendor:"Illy",     desc:"NC + IE/ESE/IC",         eta:"2026-06-12", conf:"tentative",  status:"pending",   arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:""},
+  {id:"po773", po:"773", vendor:"Illy",     desc:"WB + GC",                eta:"2026-06-12", conf:"tentative",  status:"pending",   arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:""},
+  {id:"po774", po:"774", vendor:"Illy",     desc:"KC 32CT CLASS pure",     eta:"2026-06-15", conf:"tentative",  status:"pending",   arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:""},
+  {id:"po775", po:"775", vendor:"Illy",     desc:"KC 32CT + 20CT",         eta:"2026-06-15", conf:"tentative",  status:"pending",   arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:""},
+  {id:"po776", po:"776", vendor:"Illy",     desc:"KC + RTD",               eta:"2026-06-19", conf:"tentative",  status:"pending",   arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:""},
+  {id:"po777", po:"777", vendor:"Illy",     desc:"WB CLASS rem + INTEN",   eta:"2026-06-19", conf:"tentative",  status:"pending",   arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:""},
+  {id:"po712", po:"712", vendor:"SureFire", desc:"",                       eta:null,         conf:"tbd",        status:"pending",   arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:""},
+  {id:"po722", po:"722", vendor:"SureFire", desc:"",                       eta:null,         conf:"tbd",        status:"pending",   arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:""},
+  {id:"po723", po:"723", vendor:"SureFire", desc:"Remainder",              eta:null,         conf:"tbd",        status:"pending",   arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:""},
+  {id:"po736", po:"736", vendor:"SureFire", desc:"4k Bulk Flashlight",     eta:null,         conf:"tbd",        status:"pending",   arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:""}
 ];
 
 /* ── state ── */
