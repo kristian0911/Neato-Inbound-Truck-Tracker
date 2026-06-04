@@ -263,7 +263,7 @@ tr:hover td{background:rgba(245,197,24,.025);cursor:pointer}
 <script>
 (function(){
 "use strict";
-/* ââ storage (localStorage â persists across page reloads) ââ */
+/* ââ storage (localStorage — persists across page reloads) ââ */
 var store={
   getJSON:function(k,d){try{var v=localStorage.getItem(k);if(v==null)return d;return JSON.parse(v);}catch(e){return d;}},
   setJSON:function(k,o){try{localStorage.setItem(k,JSON.stringify(o));}catch(e){}}
@@ -326,15 +326,15 @@ function statusLabel(p){
   var m={pending:"Pending",confirmed:"Confirmed",transit:"In Transit",arrived:"Arrived",unloading:"Unloading",complete:"Complete"};
   return m[p.status]||p.status;
 }
-function fmtTs(ts){if(!ts)return"â";var d=new Date(ts);return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");}
+function fmtTs(ts){if(!ts)return"—";var d=new Date(ts);return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");}
 var TIME_SLOTS=[
-  {v:"06:00",l:"6:00 â 8:00 AM"},{v:"08:00",l:"8:00 â 10:00 AM"},
-  {v:"10:00",l:"10:00 AM â 12:00 PM"},{v:"12:00",l:"12:00 â 2:00 PM"},
-  {v:"14:00",l:"2:00 â 4:00 PM"},{v:"16:00",l:"4:00 â 6:00 PM"},
-  {v:"18:00",l:"6:00 â 8:00 PM"},{v:"20:00",l:"8:00 â 10:00 PM"}
+  {v:"06:00",l:"6:00 – 8:00 AM"},{v:"08:00",l:"8:00 – 10:00 AM"},
+  {v:"10:00",l:"10:00 AM – 12:00 PM"},{v:"12:00",l:"12:00 – 2:00 PM"},
+  {v:"14:00",l:"2:00 – 4:00 PM"},{v:"16:00",l:"4:00 – 6:00 PM"},
+  {v:"18:00",l:"6:00 – 8:00 PM"},{v:"20:00",l:"8:00 – 10:00 PM"}
 ];
 function fmtWindow(w){
-  if(!w)return'<span style="color:var(--faint)">â</span>';
+  if(!w)return'<span style="color:var(--faint)">—</span>';
   var s=TIME_SLOTS.find(function(t){return t.v===w;});
   return'<span style="font-family:&quot;JetBrains Mono&quot;,monospace;font-size:11px;color:var(--yellow)">'+(s?s.l:w)+'</span>';
 }
@@ -390,11 +390,11 @@ function renderTable(list){
       '<td><span class="sbadge '+statusClass(p)+'">'+statusLabel(p)+'</span></td>'+
       '<td><span class="po-num">'+esc(p.po)+'</span></td>'+
       '<td><span class="vpill v-'+vendorClass(p.vendor)+'">'+esc(p.vendor)+'</span></td>'+
-      '<td style="color:var(--muted);max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(p.desc||"â")+'</td>'+
+      '<td style="color:var(--muted);max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(p.desc||"—")+'</td>'+
       '<td>'+fmtEta(p.eta)+'</td>'+
       '<td>'+fmtWindow(p.arrivalWindow)+'</td>'+
       '<td>'+fmtConf(p.conf)+'</td>'+
-      '<td>'+(p.arrivedAt?'<span class="mono" style="font-size:12px;color:var(--s-arrived)">&#9679; '+fmtTs(p.arrivedAt)+'</span>':'<span style="color:var(--faint)">â</span>')+'</td>'+
+      '<td>'+(p.arrivedAt?'<span class="mono" style="font-size:12px;color:var(--s-arrived)">&#9679; '+fmtTs(p.arrivedAt)+'</span>':'<span style="color:var(--faint)">—</span>')+'</td>'+
       '<td style="text-align:right"><button class="btn sm" data-edit="'+p.id+'">&#9998; Edit</button></td>'+
     '</tr>';
   }).join("");
@@ -424,7 +424,7 @@ function renderTimeline(list){
     var grp=groups[k].slice().sort(function(a,b){if(!a.arrivalWindow)return 1;if(!b.arrivalWindow)return -1;return a.arrivalWindow.localeCompare(b.arrivalWindow);});
     var grpLabel;
     if(k===pastKey)grpLabel='<span style="color:var(--s-overdue)">&#9888; Overdue / Past ETA</span>';
-    else if(k==="__tbd__")grpLabel='<span style="color:var(--faint)">TBD â Date Not Set</span>';
+    else if(k==="__tbd__")grpLabel='<span style="color:var(--faint)">TBD — Date Not Set</span>';
     else{var d=new Date(k+T),du=daysUntil(k);var mo=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][d.getMonth()];
       var lbl=mo+" "+d.getDate()+", "+d.getFullYear();
       if(du===0)lbl+='&nbsp;&nbsp;<span style="color:var(--yellow);font-size:11px">TODAY</span>';
@@ -436,7 +436,7 @@ function renderTimeline(list){
         '<td><span class="sbadge '+statusClass(p)+'">'+statusLabel(p)+'</span></td>'+
         '<td><span class="po-num">'+esc(p.po)+'</span></td>'+
         '<td><span class="vpill v-'+vendorClass(p.vendor)+'">'+esc(p.vendor)+'</span></td>'+
-        '<td style="color:var(--muted);max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(p.desc||"â")+'</td>'+
+        '<td style="color:var(--muted);max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(p.desc||"—")+'</td>'+
         '<td>'+fmtWindow(p.arrivalWindow)+'</td>'+
         '<td>'+fmtConf(p.conf)+'</td>'+
         '<td>'+(p.dock?'<span style="color:var(--muted);font-size:12px">Door '+esc(p.dock)+'</span>':'')+'</td>'+
@@ -644,7 +644,7 @@ function parseETA(s){
   return null;
 }
 function parseConf(s){if(!s)return'tbd';var l=s.toLowerCase().trim();if(l.indexOf('confirm')>=0)return'confirmed';if(l.indexOf('tent')>=0)return'tentative';return'tbd';}
-function parseWin(s){if(!s||s==='â')return'';var t=TIME_SLOTS.find(function(x){return x.l===s||x.v===s;});return t?t.v:'';}
+function parseWin(s){if(!s||s==='—')return'';var t=TIME_SLOTS.find(function(x){return x.l===s||x.v===s;});return t?t.v:'';}
 
 var _importRows=null,_importMap=null;
 
@@ -724,7 +724,7 @@ function previewImport(){
   document.getElementById('importPreviewArea').innerHTML=
     '<div style="font-size:11px;color:var(--muted);margin-top:12px;margin-bottom:6px">Detected columns:</div>'+
     '<div class="col-match">'+tags+'</div>'+
-    (map.po===undefined?'<div style="color:#F87171;font-size:12px;margin-bottom:8px">&#9888; No PO # column found â each row will get a generated ID</div>':'')+
+    (map.po===undefined?'<div style="color:#F87171;font-size:12px;margin-bottom:8px">&#9888; No PO # column found — each row will get a generated ID</div>':'')+
     '<div style="font-size:11px;color:var(--muted);margin-bottom:6px">Preview (first '+Math.min(5,_importRows.length)+' of '+_importRows.length+' rows):</div>'+
     '<div class="import-preview"><table><thead><tr>'+previewHdrs+'</tr></thead><tbody>'+previewRows+'</tbody></table></div>'+
     mergeOpts;
@@ -761,7 +761,7 @@ function executeImport(){
 }
 function downloadTemplate(){
   var head='PO,Vendor,Description,ETA,Arrival Window,Confidence,Status,Dock,Notes\n';
-  var ex='750,Illy,WB Class,2026-06-08,6:00 â 8:00 AM,Tentative,pending,,\n';
+  var ex='750,Illy,WB Class,2026-06-08,6:00 – 8:00 AM,Tentative,pending,,\n';
   var blob=new Blob([head+ex],{type:'text/csv'});
   var a=document.createElement('a');a.href=URL.createObjectURL(blob);
   a.download='neato_inbound_template.csv';document.body.appendChild(a);a.click();a.remove();
@@ -953,10 +953,10 @@ function openArchive(){
     var dmgBadge = (p.dmgPhotos&&p.dmgPhotos.length) ? '<span style="color:#FB923C;font-size:11px;margin-left:6px">&#128247; '+p.dmgPhotos.length+'</span>' : '';
     var bolBadge = p.bolFile ? '<span style="color:#60A5FA;font-size:11px;margin-left:6px">&#128196; BOL</span>' : '';
     return '<tr data-arch-id="'+p.id+'">'+
-      '<td><span class="mono" style="font-size:12px;color:var(--muted)">'+(p.completedAt?new Date(p.completedAt).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"}):"â")+'</span></td>'+
+      '<td><span class="mono" style="font-size:12px;color:var(--muted)">'+(p.completedAt?new Date(p.completedAt).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"}):"—")+'</span></td>'+
       '<td><span class="po-num">'+esc(p.po)+'</span></td>'+
       '<td><span class="vpill v-'+vendorClass(p.vendor)+'">'+esc(p.vendor)+'</span></td>'+
-      '<td style="color:var(--muted);font-size:13px;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(p.desc||"â")+'</td>'+
+      '<td style="color:var(--muted);font-size:13px;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(p.desc||"—")+'</td>'+
       '<td>'+bolBadge+dmgBadge+'</td>'+
       '<td style="text-align:right"><button class="btn sm" data-arch-view="'+p.id+'">&#128065; View</button></td>'+
       '</tr>';
@@ -1020,10 +1020,10 @@ function openArchivedPO(p){
     '</div>'+
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">'+
       '<div><div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-family:"Saira Condensed",sans-serif">PO Number</div><div style="margin-top:4px;font-family:"JetBrains Mono",monospace;font-weight:700">'+esc(p.po)+'</div></div>'+
-      '<div><div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-family:"Saira Condensed",sans-serif">Completed</div><div style="margin-top:4px;font-size:13px">'+( p.completedAt?new Date(p.completedAt).toLocaleString():"â")+'</div></div>'+
+      '<div><div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-family:"Saira Condensed",sans-serif">Completed</div><div style="margin-top:4px;font-size:13px">'+( p.completedAt?new Date(p.completedAt).toLocaleString():"—")+'</div></div>'+
       '<div><div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-family:"Saira Condensed",sans-serif">Vendor</div><div style="margin-top:4px"><span class="vpill v-'+vendorClass(p.vendor)+'">'+esc(p.vendor)+'</span></div></div>'+
-      '<div><div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-family:"Saira Condensed",sans-serif">ETA Date</div><div style="margin-top:4px;font-size:13px">'+esc(p.eta||"â")+'</div></div>'+
-      '<div style="grid-column:1/-1"><div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-family:"Saira Condensed",sans-serif">Description</div><div style="margin-top:4px;font-size:13px">'+esc(p.desc||"â")+'</div></div>'+
+      '<div><div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-family:"Saira Condensed",sans-serif">ETA Date</div><div style="margin-top:4px;font-size:13px">'+esc(p.eta||"—")+'</div></div>'+
+      '<div style="grid-column:1/-1"><div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-family:"Saira Condensed",sans-serif">Description</div><div style="margin-top:4px;font-size:13px">'+esc(p.desc||"—")+'</div></div>'+
       (p.notes?'<div style="grid-column:1/-1"><div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-family:"Saira Condensed",sans-serif">Notes</div><div style="margin-top:4px;font-size:13px;color:var(--muted)">'+esc(p.notes)+'</div></div>':'')+'</div>'+
     '<div class="attach-section"><label style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-family:"Saira Condensed",sans-serif;display:block;margin-bottom:6px">Bill of Lading (BOL)</label>'+bolHtml+'</div>'+
     dmgHtml+
