@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Saira:wght@300;400;500;600&family=Saira+Condensed:wght@500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
-<style>
+<style>h
 :root{
   --bg:#0C0C0C;--panel:#141414;--panel2:#1C1C1C;--line:#2A2A2A;
   --ink:#F4F3EC;--muted:#888880;--faint:#555552;
@@ -243,6 +243,8 @@ tr:hover td{background:rgba(245,197,24,.025);cursor:pointer}
       <button data-vendor="Illy">Illy</button>
       <button data-vendor="EA">EA</button>
       <button data-vendor="SureFire">SureFire</button>
+                <button data-vendor="Kennys">Kennys</button>
+                <button data-vendor="Finleys">Finleys</button>
       <button data-vendor="other">Other</button>
     </div>
     <input class="search-box" id="searchBox" placeholder="&#128269; Search PO, vendor, description…">
@@ -250,7 +252,7 @@ tr:hover td{background:rgba(245,197,24,.025);cursor:pointer}
     <button class="btn sm ghost" id="importBtn">&#11014; Import CSV</button>
     <button class="btn sm ghost" id="exportBtn">&#11015; Export CSV</button>
     <button class="btn sm ghost arch-btn" id="archiveBtn">&#128190; Archive</button>
-  </div>
+  </div>h
 
   <div class="tbl-wrap"><div id="mainContent"></div></div>
 </div>
@@ -344,7 +346,7 @@ function filtered(){
     if(curView==="complete"&&p.status!=="complete")return false;
     if(curView==="active"&&p.status==="pending"&&!isOverdue(p)&&p.conf==="tbd")return false;
     if(curVendor!=="all"&&curVendor!=="other"&&p.vendor!==curVendor)return false;
-    if(curVendor==="other"&&["Illy","EA","SureFire"].indexOf(p.vendor)>=0)return false;
+    if(curVendor==="other"&&["Illy","EA","SureFire","Kennys","Finleys"].indexOf(p.vendor)>=0)return false;
     if(searchTerm){var q=searchTerm.toLowerCase();if(p.po.indexOf(q)<0&&p.vendor.toLowerCase().indexOf(q)<0&&p.desc.toLowerCase().indexOf(q)<0)return false;}
     return true;
   });
