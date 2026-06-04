@@ -1003,7 +1003,7 @@ function openArchivedPO(p){
     dmgHtml = '<div class="attach-section" style="margin-top:16px"><label style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-family:"Saira Condensed",sans-serif;display:block;margin-bottom:6px">Damage Photos</label>'+
     '<div class="dmg-grid">'+
     p.dmgPhotos.map(function(ph,i){
-      return '<div class="dmg-slot" style="cursor:zoom-in" onclick="(function(){var d=document.createElement('div');d.className='dmg-photo-view';var im=document.createElement('img');im.src=''+ph.dataURL+'';d.appendChild(im);d.onclick=function(){document.body.removeChild(d);};document.body.appendChild(d);})()">'+
+      return '<div class="dmg-slot" style="cursor:zoom-in" onclick="(function(){var d=document.createElement(\'div\');d.className=\'dmg-photo-view\';var im=document.createElement(\'img\');im.src=\'\'+ph.dataURL+\'\';d.appendChild(im);d.onclick=function(){document.body.removeChild(d);};document.body.appendChild(d);})()">'+
         '<img src="'+ph.dataURL+'" alt="Damage '+(i+1)+'"></div>';
     }).join('')+
     '</div></div>';
