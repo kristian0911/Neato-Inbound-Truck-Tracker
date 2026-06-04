@@ -1038,8 +1038,9 @@ function openArchivedPO(p){
 
 /* ── boot ── */
 (function(){
+  var DATA_VER="v2";if(store.getJSON("posVer",null)!==DATA_VER){store.setJSON("pos",null);}
   pos=store.getJSON("pos",null);
-  if(!pos||!pos.length){pos=DEFAULT_POS.map(function(p){return Object.assign({},p);});store.setJSON("pos",pos);}
+  if(!pos||!pos.length){pos=DEFAULT_POS.map(function(p){return Object.assign({},p);});store.setJSON("pos",pos);store.setJSON("posVer",DATA_VER);}
   render();
 })();
 })();
