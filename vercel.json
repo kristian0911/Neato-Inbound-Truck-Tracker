@@ -1,0 +1,5 @@
+{
+    "rewrites": [
+          { "source": "/", "destination": "/Inbound_Truck_Tracker.html" }
+    ]
+}
