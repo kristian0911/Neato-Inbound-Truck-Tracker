@@ -1019,7 +1019,7 @@ function openArchivedPO(p){
       '<button class="mclose" id="mClose2">&#215;</button>'+
     '</div>'+
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">'+
-      '<div><div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-family:"Saira Condensed",sans-serif">PO Number</div><div style="margin-top:4px;font-family:'JetBrains Mono',monospace;font-weight:700">'+esc(p.po)+'</div></div>'+
+      '<div><div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-family:"Saira Condensed",sans-serif">PO Number</div><div style="margin-top:4px;font-family:"JetBrains Mono",monospace;font-weight:700">'+esc(p.po)+'</div></div>'+
       '<div><div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-family:"Saira Condensed",sans-serif">Completed</div><div style="margin-top:4px;font-size:13px">'+( p.completedAt?new Date(p.completedAt).toLocaleString():"â")+'</div></div>'+
       '<div><div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-family:"Saira Condensed",sans-serif">Vendor</div><div style="margin-top:4px"><span class="vpill v-'+vendorClass(p.vendor)+'">'+esc(p.vendor)+'</span></div></div>'+
       '<div><div style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-family:"Saira Condensed",sans-serif">ETA Date</div><div style="margin-top:4px;font-size:13px">'+esc(p.eta||"â")+'</div></div>'+
