@@ -404,7 +404,7 @@ function renderTable(list){
       '<td><span class="po-num">'+esc(p.po)+'</span></td>'+
       '<td><span class="vpill v-'+vendorClass(p.vendor)+'">'+esc(p.vendor)+'</span></td>'+
       '<td style="color:var(--muted);max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(p.desc||"—")+'</td>'+
-      '<td>'+fmtEta(p.eta)+'</td>'+
+      '<td>'+(p.status==="complete"&&p.completedAt?'<span style="color:var(--faint);font-size:11px">Archives in '+(30-Math.min(30,Math.floor((Date.now()-p.completedAt)/(1000*60*60*24))))+'d</span>':fmtEta(p.eta))+'</td>'+
       '<td>'+fmtWindow(p.arrivalWindow)+'</td>'+
       '<td>'+fmtConf(p.conf)+'</td>'+
       '<td>'+(p.arrivedAt?'<span class="mono" style="font-size:12px;color:var(--s-arrived)">&#9679; '+fmtTs(p.arrivedAt)+'</span>':'<span style="color:var(--faint)">—</span>')+'</td>'+
@@ -565,6 +565,25 @@ function openModal(id){
 }
 var _pendingStatus=null;
 
+function autoArchiveStale(){
+  var THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
+  var now = Date.now();
+  var toArchive = pos.filter(function(p){
+    return p.status === "complete" && p.completedAt && (now - p.completedAt) >= THIRTY_DAYS;
+  });
+  if(!toArchive.length) return;
+  var arch = store.getJSON("archive", []);
+  toArchive.forEach(function(p){
+    var existIdx = arch.findIndex(function(x){return x.id===p.id;});
+    if(existIdx >= 0) arch[existIdx] = p; else arch.push(p);
+  });
+  store.setJSON("archive", arch);
+  pos = pos.filter(function(p){
+    return !(p.status === "complete" && p.completedAt && (now - p.completedAt) >= THIRTY_DAYS);
+  });
+  store.setJSON("pos", pos);
+}
+
 function savePO(){
   var isNew=!editId;
   var p=isNew?{id:"po"+Date.now(),arrivedAt:null,completedAt:null}:pos.find(function(x){return x.id===editId;});
@@ -583,15 +602,8 @@ function savePO(){
   p.bolFile = _bolFile;
   p.dmgPhotos = _dmgPhotos.slice();
   store.setJSON("pos",pos);
-  // Auto-archive completed POs
-  if(p.status === "complete"){
-    var arch = store.getJSON("archive", []);
-    var existIdx = arch.findIndex(function(x){return x.id===p.id;});
-    if(existIdx >= 0) arch[existIdx] = p; else arch.push(p);
-    store.setJSON("archive", arch);
-    pos = pos.filter(function(x){return x.id!==p.id;});
-    store.setJSON("pos", pos);
-  }
+  // Auto-archive completed POs older than 30 days
+  autoArchiveStale();
   closeModal();
   render();
   toast(isNew?"PO "+p.po+" added":"PO "+p.po+" updated");
@@ -1091,6 +1103,7 @@ function openArchivedPO(p){
   if(store.getJSON("posVer",null)!==DATA_VER){store.setJSON("pos",null);store.setJSON("posVer",DATA_VER);}
   pos=store.getJSON("pos",null);
   if(!pos||!pos.length){pos=DEFAULT_POS;store.setJSON("pos",pos);}
+  autoArchiveStale();
   render();
   try{
     var cloudPos=await store.loadCloud("pos",null);
