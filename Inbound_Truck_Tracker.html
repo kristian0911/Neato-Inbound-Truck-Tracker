@@ -1052,11 +1052,15 @@ function openArchivedPO(p){
 (async function(){
   var DATA_VER="v2";
   if(store.getJSON("posVer",null)!==DATA_VER){store.setJSON("pos",null);store.setJSON("posVer",DATA_VER);}
-  var pos = await store.loadCloud("pos", null);
-  if(!pos||!pos.length){pos=store.getJSON("pos",null)||DEFAULT_POS;store.setJSON("pos",pos);}
-  var archCloud = await store.loadCloud("archive", null);
-  if(archCloud){localStorage.setItem("archive",JSON.stringify(archCloud));}
+  pos=store.getJSON("pos",null);
+  if(!pos||!pos.length){pos=DEFAULT_POS;store.setJSON("pos",pos);}
   render();
+  try{
+    var cloudPos=await store.loadCloud("pos",null);
+    if(cloudPos&&cloudPos.length){pos=cloudPos;store.setJSON("pos",pos);render();}
+    var cloudArch=await store.loadCloud("archive",null);
+    if(cloudArch){localStorage.setItem("archive",JSON.stringify(cloudArch));}
+  }catch(e){}
 })();
 })();
 </script>
