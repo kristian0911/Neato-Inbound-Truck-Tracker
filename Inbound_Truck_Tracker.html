@@ -6,10 +6,10 @@
 <title>Inbound Truck Tracker</title>
   <link rel="apple-touch-icon" href="/icon.png">
   <link rel="icon" type="image/png" href="/icon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.googleapis.com">h
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Saira:wght@300;400;500;600&family=Saira+Condensed:wght@500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
-<style>
+<style>h
 :root{
   --bg:#0C0C0C;--panel:#141414;--panel2:#1C1C1C;--line:#2A2A2A;
   --ink:#F4F3EC;--muted:#888880;--faint:#555552;
@@ -267,8 +267,18 @@ tr:hover td{background:rgba(245,197,24,.025);cursor:pointer}
 "use strict";
 /* ââ storage (localStorage — persists across page reloads) ââ */
 var store={
-  getJSON:function(k,d){try{var v=localStorage.getItem(k);if(v==null)return d;return JSON.parse(v);}catch(e){return d;}},
-  setJSON:function(k,o){try{localStorage.setItem(k,JSON.stringify(o));}catch(e){}}
+  getJSON:function(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}},
+  setJSON:function(k,o){
+    try{localStorage.setItem(k,JSON.stringify(o));}catch(e){}
+    fetch('/api/data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:k,value:o})}).catch(function(){});
+  },
+  loadCloud:async function(k,d){
+    try{
+      var r=await fetch('/api/data?key='+encodeURIComponent(k));
+      if(r.ok){var j=await r.json();if(j&&j.value!==undefined){localStorage.setItem(k,JSON.stringify(j.value));return j.value;}}
+    }catch(e){}
+    return d;
+  }
 };
 
 /* ââ default PO data from FL-012 ââ */
@@ -1039,10 +1049,13 @@ function openArchivedPO(p){
 
 
 /* ââ boot ââ */
-(function(){
-  var DATA_VER="v2";if(store.getJSON("posVer",null)!==DATA_VER){store.setJSON("pos",null);}
-  pos=store.getJSON("pos",null);
-  if(!pos||!pos.length){pos=DEFAULT_POS.map(function(p){return Object.assign({},p);});store.setJSON("pos",pos);store.setJSON("posVer",DATA_VER);}
+(async function(){
+  var DATA_VER="v2";
+  if(store.getJSON("posVer",null)!==DATA_VER){store.setJSON("pos",null);store.setJSON("posVer",DATA_VER);}
+  var pos = await store.loadCloud("pos", null);
+  if(!pos||!pos.length){pos=store.getJSON("pos",null)||DEFAULT_POS;store.setJSON("pos",pos);}
+  var archCloud = await store.loadCloud("archive", null);
+  if(archCloud){localStorage.setItem("archive",JSON.stringify(archCloud));}
   render();
 })();
 })();
