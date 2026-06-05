@@ -306,6 +306,7 @@ var DEFAULT_POS=[
 /* ââ state ââ */
 var pos=[], curView="all", curVendor="all", searchTerm="";
 var editId=null;
+var editArchiveId=null;
 var today=new Date();today.setHours(0,0,0,0);
 var todayStr=today.getFullYear()+"-"+String(today.getMonth()+1).padStart(2,"0")+"-"+String(today.getDate()).padStart(2,"0");
 
@@ -476,7 +477,7 @@ var CONF_OPTS=[{v:"tentative",l:"Tentative"},{v:"confirmed",l:"Confirmed"},{v:"t
 
 function openModal(id){
   editId=id;
-  var p=id?pos.find(function(x){return x.id===id;}):{id:null,po:"",vendor:"Illy",desc:"",eta:"",conf:"tentative",status:"pending",arrivedAt:null,completedAt:null,dock:"",notes:"",arrivalWindow:""};
+  var p=editArchiveId?store.getJSON('archive',[]).find(function(x){return x.id===editArchiveId;}):id?pos.find(function(x){return x.id===id;}):{id:null,po:"",vendor:"Illy",desc:"",eta:"",conf:"tentative",status:"pending",arrivedAt:null,completedAt:null,dock:"",notes:"",arrivalWindow:""};
   _bolFile = p.bolFile || null;
   _dmgPhotos = (p.dmgPhotos || []).slice();
   var stepBtns=STATUSES.map(function(s){
@@ -536,7 +537,8 @@ function openModal(id){
   document.getElementById("mClose").onclick=closeModal;
   document.getElementById("mCancel").onclick=closeModal;
   if(document.getElementById("mDel"))document.getElementById("mDel").onclick=deletePO;
-  document.getElementById("mSave").onclick=savePO;
+  if(editArchiveId){var d=document.getElementById("mDel");if(d)d.style.display='none';}
+  document.getElementById("mSave").onclick=editArchiveId?saveArchivedPO:savePO;
   _bindBolEvents();
   _bindDmgEvents();
   document.getElementById("statusSteps").querySelectorAll("[data-setstatus]").forEach(function(b){
@@ -605,7 +607,29 @@ function deletePO(){
   toast("PO "+p.po+" deleted");
 }
 
+function saveArchivedPO(){
+  var archived = store.getJSON('archive',[]);
+  var p = archived.find(function(x){return x.id===editArchiveId;});
+  if(!p) return;
+  p.po=(document.getElementById('fPO')||{}).value||p.po;
+  p.vendor=(document.getElementById('fVendor')||{}).value||p.vendor;
+  p.desc=(document.getElementById('fDesc')||{}).value||p.desc;
+  p.eta=document.getElementById('fETA')?document.getElementById('fETA').value:p.eta;
+  p.conf=document.getElementById('fConf')?document.getElementById('fConf').value:p.conf;
+  p.dock=(document.getElementById('fDock')||{}).value||p.dock||'';
+  p.arrivalWindow=document.getElementById('fWindow')?document.getElementById('fWindow').value:p.arrivalWindow;
+  p.notes=(document.getElementById('fNotes')||{}).value||'';
+  p.bolFile = _bolFile !== undefined ? _bolFile : p.bolFile;
+  p.dmgPhotos = _dmgPhotos !== undefined ? _dmgPhotos : p.dmgPhotos;
+  if(!p.po){toast("PO number is required");return;}
+  store.setJSON('archive', archived);
+  editArchiveId = null;
+  closeModal();
+  toast("Archived PO "+p.po+" updated");
+}
+
 function closeModal(){
+  editArchiveId=null;
   document.getElementById("overlay").classList.remove("on");
   document.getElementById("modalHost").innerHTML="";
   editId=null;_pendingStatus=null;
@@ -971,6 +995,7 @@ function openArchive(){
       '<td style="color:var(--muted);font-size:13px;max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(p.desc||"—")+'</td>'+
       '<td>'+bolBadge+dmgBadge+'</td>'+
       '<td style="text-align:right"><button class="btn sm" data-arch-view="'+p.id+'">&#128065; View</button></td>'+
+      '<td><button class="btn sm" data-arch-edit="'+p.id+'">&#9998; Edit</button></td>'+
       '</tr>';
   }).join('') : '<tr><td colspan="6"><div class="archive-empty">No archived POs yet. Completed POs will appear here.</div></td></tr>';
   
@@ -981,7 +1006,7 @@ function openArchive(){
       '<button class="mclose" id="mClose">&#215;</button>'+
     '</div>'+
     '<div style="overflow-x:auto">'+
-    '<table><thead><tr><th>Completed</th><th>PO #</th><th>Vendor</th><th>Description</th><th>Attachments</th><th></th></tr></thead>'+
+    '<table><thead><tr><th>Completed</th><th>PO #</th><th>Vendor</th><th>Description</th><th>Attachments</th><th></th><th></th></tr></thead>'+
     '<tbody>'+rows+'</tbody></table></div>'+
     '<div class="modal-actions"><div style="flex:1"></div>'+
     '<button class="btn ghost" id="mCancel">Close</button>'+
@@ -1005,6 +1030,18 @@ function openArchive(){
       var p = store.getJSON('archive',[]).find(function(x){return x.id===id;});
       if(!p) return;
       openArchivedPO(p);
+    };
+  });
+  // Edit archived PO
+  host.querySelectorAll('[data-arch-edit]').forEach(function(btn){
+    btn.onclick = function(e){
+      e.stopPropagation();
+      var id = btn.getAttribute('data-arch-edit');
+      var archived = store.getJSON('archive',[]);
+      var p = archived.find(function(x){return x.id===id;});
+      if(!p) return;
+      editArchiveId = id;
+      openModal(id);
     };
   });
 }
