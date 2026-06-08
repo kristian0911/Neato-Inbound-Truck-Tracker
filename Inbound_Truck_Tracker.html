@@ -1252,6 +1252,8 @@ function openArchivedPO(p){
   async function pollOnce(){
     if(pollPaused())return;
     if(pollInFlight)return;
+    if(pendingWrites > 0)return;                                  // write in flight — let it land
+    if(Date.now() - lastWriteAt < WRITE_GRACE_MS)return;          // post-write grace — local is authoritative
     pollInFlight=true;
     try{
       var r=await fetch("/api/data?key=pos");
