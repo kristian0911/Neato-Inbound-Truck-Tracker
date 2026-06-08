@@ -1227,6 +1227,60 @@ function openArchivedPO(p){
 
   autoArchiveStale();
   render();
+
+  // Polling layer (D2(b)): 10s GET /api/data?key=pos with modal + visibility guards.
+  var POLL_MS=10000;
+  var pollTimer=null;
+  var pollInFlight=false;
+
+  function modalOpen(){
+    var ov=document.getElementById("overlay");
+    return !!(ov&&getComputedStyle(ov).display!=="none");
+  }
+  function pollPaused(){return modalOpen()||document.hidden;}
+
+  async function pollOnce(){
+    if(pollPaused())return;
+    if(pollInFlight)return;
+    pollInFlight=true;
+    try{
+      var r=await fetch("/api/data?key=pos");
+      if(!r.ok)throw new Error("HTTP "+r.status);
+      var j=await r.json();
+      sync.markSynced();
+      if(!j||j.value===undefined)return;
+      if(pollPaused())return; // modal opened mid-flight — skip to avoid clobber
+      var cloudPos=j.value;
+      if(JSON.stringify(cloudPos)!==JSON.stringify(pos)){
+        pos=cloudPos;
+        store.setLocal("pos",pos);
+        render();
+      }
+    }catch(e){
+      sync.markStale(e);
+    }finally{
+      pollInFlight=false;
+    }
+  }
+
+  function startPolling(){
+    if(pollTimer)clearInterval(pollTimer);
+    pollTimer=setInterval(pollOnce,POLL_MS);
+  }
+  function stopPolling(){
+    if(pollTimer){clearInterval(pollTimer);pollTimer=null;}
+  }
+
+  document.addEventListener("visibilitychange",function(){
+    if(document.hidden){
+      stopPolling();
+    }else{
+      pollOnce();      // immediate refresh on tab focus
+      startPolling();
+    }
+  });
+
+  if(!document.hidden)startPolling();
 })();
 })();
 </script>
