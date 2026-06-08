@@ -1135,9 +1135,13 @@ function _bindBolEvents(){
   function handleBolFile(file){
     if(!file) return;
     var isImage = file.type && file.type.indexOf('image/') === 0;
+    var isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
+    if (isPdf && file.size > 1024 * 1024) {
+      toast('PDF too large — keep under 1 MB or convert to an image');
+      return;
+    }
     var fileName = file.name;
     // Compress large images (>500 KB) before upload; small images and PDFs upload as-is.
-    // Blob route caps at 10 MB; PDFs ride that limit directly.
     var prep = (isImage && file.size > 500 * 1024)
       ? compressImage(file, 1600, 0.75).then(function(blob){
           return new File([blob], fileName.replace(/\.[^.]+$/, '') + '.jpg', {type:'image/jpeg'});
