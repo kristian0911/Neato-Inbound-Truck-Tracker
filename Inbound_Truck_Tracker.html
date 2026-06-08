@@ -343,14 +343,24 @@ var sync={
   }
 };
 
+var pendingWrites = 0;                    // count of in-flight POSTs
+var lastWriteAt = 0;                      // monotonic timestamp of most recent successful POST
+var WRITE_GRACE_MS = 15000;               // poll-suppress window after a local write
+
 var store={
   getJSON:function(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}},
   setLocal:function(k,o){try{localStorage.setItem(k,JSON.stringify(o));}catch(e){}},
   setJSON:function(k,o){
     try{localStorage.setItem(k,JSON.stringify(o));}catch(e){}
-    fetch('/api/data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:k,value:o})})
-      .then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);sync.markSynced();})
-      .catch(function(err){sync.markStale(err);});
+    pendingWrites++;
+    return fetch('/api/data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:k,value:o})})
+      .then(function(r){
+        if(!r.ok)throw new Error("HTTP "+r.status);
+        lastWriteAt = Date.now();
+        sync.markSynced();
+      })
+      .catch(function(err){sync.markStale(err);})
+      .finally(function(){pendingWrites = Math.max(0, pendingWrites - 1);});
   },
   loadCloud:async function(k,d){
     try{
@@ -1242,6 +1252,8 @@ function openArchivedPO(p){
   async function pollOnce(){
     if(pollPaused())return;
     if(pollInFlight)return;
+    if(pendingWrites > 0)return;                                  // write in flight — let it land
+    if(Date.now() - lastWriteAt < WRITE_GRACE_MS)return;          // post-write grace — local is authoritative
     pollInFlight=true;
     try{
       var r=await fetch("/api/data?key=pos");
