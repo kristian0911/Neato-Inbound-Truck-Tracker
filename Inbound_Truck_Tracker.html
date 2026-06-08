@@ -1039,6 +1039,37 @@ function _viewDmgPhoto(idx){
   document.body.appendChild(div);
 }
 
+// Compress an image File to a JPEG dataURL no larger than MAX_DIM on the long side.
+// Returns a Promise resolving to the dataURL string.
+function compressImage(file, maxDim, quality){
+  maxDim = maxDim || 1600;
+  quality = quality || 0.75;
+  return new Promise(function(resolve, reject){
+    var reader = new FileReader();
+    reader.onload = function(e){
+      var img = new Image();
+      img.onload = function(){
+        var w = img.naturalWidth, h = img.naturalHeight;
+        var scale = Math.min(1, maxDim / Math.max(w, h));
+        var cw = Math.round(w * scale), ch = Math.round(h * scale);
+        var canvas = document.createElement('canvas');
+        canvas.width = cw; canvas.height = ch;
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, cw, ch);
+        try {
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        } catch(err) {
+          reject(err);
+        }
+      };
+      img.onerror = function(){ reject(new Error('Could not decode image')); };
+      img.src = e.target.result;
+    };
+    reader.onerror = function(){ reject(new Error('Could not read file')); };
+    reader.readAsDataURL(file);
+  });
+}
+
 function _bindBolEvents(){
   var bolUpBtn = document.getElementById('bolUploadBtn');
   var bolCamBtn = document.getElementById('bolCameraBtn');
