@@ -998,16 +998,27 @@ function _bindDmgEvents(){
   if(dmgIn){
     dmgIn.onchange = function(){
       if(!this.files.length) return;
-      if(_dmgPhotos.length >= 10){ toast('Maximum 10 damage photos'); return; }
-      var reader = new FileReader();
       var f = this.files[0];
-      reader.onload = function(e){
-        _dmgPhotos.push({name: f.name, dataURL: e.target.result});
+      var input = this;
+      if(_dmgPhotos.length >= 10){ toast('Maximum 10 damage photos'); input.value = ''; return; }
+      var fileName = f.name;
+      var isImage = f.type && f.type.indexOf('image/') === 0;
+      var afterRead = isImage
+        ? compressImage(f, 1600, 0.75)
+        : new Promise(function(resolve, reject){
+            var r = new FileReader();
+            r.onload = function(e){ resolve(e.target.result); };
+            r.onerror = function(){ reject(new Error('Could not read file')); };
+            r.readAsDataURL(f);
+          });
+      afterRead.then(function(dataURL){
+        _dmgPhotos.push({name: fileName, dataURL: dataURL});
         _refreshDmgGrid();
-        this.value = '';
-      }.bind(this);
-      reader.readAsDataURL(f);
-      this.value = '';
+        toast('Photo added');
+      }).catch(function(err){
+        toast('Photo failed: ' + (err && err.message ? err.message : 'unknown error'));
+      });
+      input.value = '';
     };
   }
   // Delete buttons
