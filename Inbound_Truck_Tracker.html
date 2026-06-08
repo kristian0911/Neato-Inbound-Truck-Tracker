@@ -1090,12 +1090,30 @@ function _bindBolEvents(){
 
   function handleBolFile(file){
     if(!file) return;
-    var reader = new FileReader();
-    reader.onload = function(e){
-      _bolFile = {name: file.name, dataURL: e.target.result, url: e.target.result};
+    var isImage = file.type && file.type.indexOf('image/') === 0;
+    var isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
+
+    // Hard reject PDFs over 1 MB — we can't compress these client-side
+    if (isPdf && file.size > 1024 * 1024) {
+      toast('PDF too large — keep under 1 MB or convert to an image');
+      return;
+    }
+
+    var afterRead = isImage
+      ? compressImage(file, 1600, 0.75)
+      : new Promise(function(resolve, reject){
+          var r = new FileReader();
+          r.onload = function(e){ resolve(e.target.result); };
+          r.onerror = function(){ reject(new Error('Could not read file')); };
+          r.readAsDataURL(file);
+        });
+    afterRead.then(function(dataURL){
+      _bolFile = {name: file.name, dataURL: dataURL, url: dataURL};
       _refreshBolPreview();
-    };
-    reader.readAsDataURL(file);
+      toast('BOL attached');
+    }).catch(function(err){
+      toast('BOL failed: ' + (err && err.message ? err.message : 'unknown error'));
+    });
   }
 
   if(bolUpBtn && bolFileIn){
