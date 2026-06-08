@@ -38,6 +38,24 @@ header{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:6px 0 16p
 .app-title small{display:block;font-family:"Saira",sans-serif;font-weight:400;font-size:10px;letter-spacing:.3em;color:var(--muted);margin-top:1px}
 .spacer{flex:1}
 .clock-hdr{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted)}
+
+/* SYNC INDICATOR */
+.sync-pill{display:inline-flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--line);
+  border-radius:20px;padding:4px 10px;font-family:"Saira Condensed",sans-serif;font-weight:600;font-size:10px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--muted);cursor:default;transition:color .2s,border-color .2s;
+  user-select:none;white-space:nowrap}
+.sync-pill .dot{width:6px;height:6px;border-radius:50%;background:var(--muted);transition:background .2s}
+.sync-pill[data-state="synced"]{color:#34D399;border-color:rgba(52,211,153,.3)}
+.sync-pill[data-state="synced"] .dot{background:#34D399}
+.sync-pill[data-state="syncing"]{color:#FBBF24;border-color:rgba(251,191,36,.3)}
+.sync-pill[data-state="syncing"] .dot{background:#FBBF24}
+.sync-pill[data-state="stale"]{color:#F87171;border-color:rgba(248,113,113,.35)}
+.sync-pill[data-state="stale"] .dot{background:#F87171}
+.sync-pill.pulse .dot{animation:syncPulse .9s ease-out}
+@keyframes syncPulse{
+  0%{box-shadow:0 0 0 0 rgba(52,211,153,.55)}
+  100%{box-shadow:0 0 0 8px rgba(52,211,153,0)}
+}
 .btn{appearance:none;cursor:pointer;border:1px solid var(--line);background:var(--panel);color:var(--ink);
   font-family:"Saira Condensed",sans-serif;font-weight:600;letter-spacing:.1em;text-transform:uppercase;font-size:12px;
   padding:9px 15px;border-radius:10px;transition:.15s;display:inline-flex;align-items:center;gap:7px}
@@ -226,6 +244,9 @@ tr:hover td{background:rgba(245,197,24,.025);cursor:pointer}
     </div>
     <div class="spacer"></div>
     <div class="clock-hdr" id="clk"></div>
+    <div class="sync-pill" id="syncPill" data-state="offline" title="Working offline">
+      <span class="dot"></span><span class="lbl">Offline</span>
+    </div>
     <button class="btn primary" id="addBtn">&#43; New PO</button>
   </header>
 
@@ -266,18 +287,86 @@ tr:hover td{background:rgba(245,197,24,.025);cursor:pointer}
 (function(){
 "use strict";
 /* ââ storage (localStorage — persists across page reloads) ââ */
+/* sync indicator (header pill next to #clk) */
+var sync={
+  pill:null, lbl:null, state:"offline",
+  init:function(){
+    this.pill=document.getElementById("syncPill");
+    this.lbl=this.pill?this.pill.querySelector(".lbl"):null;
+    this.refreshTooltip();
+  },
+  fmtTs:function(iso){
+    if(!iso)return null;
+    try{return new Date(iso).toLocaleTimeString();}catch(e){return iso;}
+  },
+  refreshTooltip:function(){
+    if(!this.pill)return;
+    var last=null;try{last=localStorage.getItem("lastSyncAt");}catch(e){}
+    var t=this.fmtTs(last);
+    if(this.state==="stale"){
+      this.pill.title=t?("Sync failed — last synced at "+t):"Working offline";
+    }else if(this.state==="synced"){
+      this.pill.title=t?("Synced — last "+t):"Synced";
+    }else if(this.state==="syncing"){
+      this.pill.title="Syncing…";
+    }else{
+      this.pill.title=t?("Working offline — last synced "+t):"Working offline";
+    }
+  },
+  set:function(state){
+    this.state=state;
+    if(!this.pill)return;
+    this.pill.setAttribute("data-state",state);
+    if(this.lbl){
+      this.lbl.textContent=({synced:"Synced",syncing:"Syncing",stale:"Stale",offline:"Offline"})[state]||state;
+    }
+    this.refreshTooltip();
+  },
+  pulse:function(){
+    if(!this.pill)return;
+    this.pill.classList.remove("pulse");
+    void this.pill.offsetWidth;
+    this.pill.classList.add("pulse");
+  },
+  markSynced:function(){
+    var ts=new Date().toISOString();
+    try{localStorage.setItem("lastSyncAt",ts);}catch(e){}
+    if(this.state!=="synced")this.set("synced");
+    else this.refreshTooltip();
+    this.pulse();
+  },
+  markStale:function(err){
+    if(this.state!=="stale"){
+      console.warn("[sync] cloud op failed:",(err&&err.message)?err.message:err);
+      this.set("stale");
+    }
+  }
+};
+
 var store={
   getJSON:function(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}},
+  setLocal:function(k,o){try{localStorage.setItem(k,JSON.stringify(o));}catch(e){}},
   setJSON:function(k,o){
     try{localStorage.setItem(k,JSON.stringify(o));}catch(e){}
-    fetch('/api/data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:k,value:o})}).catch(function(){});
+    fetch('/api/data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:k,value:o})})
+      .then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);sync.markSynced();})
+      .catch(function(err){sync.markStale(err);});
   },
   loadCloud:async function(k,d){
     try{
       var r=await fetch('/api/data?key='+encodeURIComponent(k));
-      if(r.ok){var j=await r.json();if(j&&j.value!==undefined){localStorage.setItem(k,JSON.stringify(j.value));return j.value;}}
-    }catch(e){}
-    return d;
+      if(!r.ok)throw new Error("HTTP "+r.status);
+      var j=await r.json();
+      sync.markSynced();
+      if(j&&j.value!==undefined){
+        try{localStorage.setItem(k,JSON.stringify(j.value));}catch(e){}
+        return j.value;
+      }
+      return d;
+    }catch(e){
+      sync.markStale(e);
+      return d;
+    }
   }
 };
 
@@ -1100,17 +1189,98 @@ function openArchivedPO(p){
 /* ââ boot ââ */
 (async function(){
   var DATA_VER="v2";
-  if(store.getJSON("posVer",null)!==DATA_VER){store.setJSON("pos",null);store.setJSON("posVer",DATA_VER);}
-  pos=store.getJSON("pos",null);
-  if(!pos||!pos.length){pos=DEFAULT_POS;store.setJSON("pos",pos);}
+  sync.init();
+
+  // Snapshot localStorage BEFORE loadCloud (loadCloud writes-through on success).
+  var localPosVer=store.getJSON("posVer",null);
+  var localPosSnap=store.getJSON("pos",null);
+  var localArchSnap=store.getJSON("archive",null);
+
+  // Await cloud read first — do not POST defaults until we know what cloud has.
+  var cloudPos=await store.loadCloud("pos",null);
+  var cloudArch=await store.loadCloud("archive",null);
+
+  // Resolve pos: cloud wins if non-empty; otherwise local snapshot if non-empty; otherwise DEFAULT_POS.
+  if(cloudPos&&cloudPos.length){
+    pos=cloudPos;
+    store.setLocal("pos",pos);
+  }else if(localPosSnap&&localPosSnap.length){
+    pos=localPosSnap;
+    store.setJSON("pos",pos);
+  }else{
+    pos=DEFAULT_POS;
+    store.setJSON("pos",pos);
+  }
+
+  // Resolve archive: cloud wins; else push local up; else leave untouched.
+  if(cloudArch){
+    store.setLocal("archive",cloudArch);
+  }else if(localArchSnap){
+    store.setJSON("archive",localArchSnap);
+  }
+
+  // Schema-version check happens AFTER cloud settles — log drift, do not auto-clear.
+  if(localPosVer!==DATA_VER){
+    console.log("[boot] posVer drift: local="+localPosVer+" current="+DATA_VER+" (not clearing in this PR)");
+    store.setLocal("posVer",DATA_VER);
+  }
+
   autoArchiveStale();
   render();
-  try{
-    var cloudPos=await store.loadCloud("pos",null);
-    if(cloudPos&&cloudPos.length){pos=cloudPos;store.setJSON("pos",pos);render();}
-    var cloudArch=await store.loadCloud("archive",null);
-    if(cloudArch){localStorage.setItem("archive",JSON.stringify(cloudArch));}
-  }catch(e){}
+
+  // Polling layer (D2(b)): 10s GET /api/data?key=pos with modal + visibility guards.
+  var POLL_MS=10000;
+  var pollTimer=null;
+  var pollInFlight=false;
+
+  function modalOpen(){
+    var ov=document.getElementById("overlay");
+    return !!(ov&&getComputedStyle(ov).display!=="none");
+  }
+  function pollPaused(){return modalOpen()||document.hidden;}
+
+  async function pollOnce(){
+    if(pollPaused())return;
+    if(pollInFlight)return;
+    pollInFlight=true;
+    try{
+      var r=await fetch("/api/data?key=pos");
+      if(!r.ok)throw new Error("HTTP "+r.status);
+      var j=await r.json();
+      sync.markSynced();
+      if(!j||j.value===undefined)return;
+      if(pollPaused())return; // modal opened mid-flight — skip to avoid clobber
+      var cloudPos=j.value;
+      if(JSON.stringify(cloudPos)!==JSON.stringify(pos)){
+        pos=cloudPos;
+        store.setLocal("pos",pos);
+        render();
+      }
+    }catch(e){
+      sync.markStale(e);
+    }finally{
+      pollInFlight=false;
+    }
+  }
+
+  function startPolling(){
+    if(pollTimer)clearInterval(pollTimer);
+    pollTimer=setInterval(pollOnce,POLL_MS);
+  }
+  function stopPolling(){
+    if(pollTimer){clearInterval(pollTimer);pollTimer=null;}
+  }
+
+  document.addEventListener("visibilitychange",function(){
+    if(document.hidden){
+      stopPolling();
+    }else{
+      pollOnce();      // immediate refresh on tab focus
+      startPolling();
+    }
+  });
+
+  if(!document.hidden)startPolling();
 })();
 })();
 </script>
