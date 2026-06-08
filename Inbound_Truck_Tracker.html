@@ -283,6 +283,12 @@ tr:hover td{background:rgba(245,197,24,.025);cursor:pointer}
 <div class="overlay" id="overlay"><div id="modalHost"></div></div>
 <div class="toast" id="toast"></div>
 
+<script type="module">
+  // Vercel Blob client SDK — bytes upload browser→Blob, server only mints the token.
+  import { upload } from 'https://esm.sh/@vercel/blob@2.4.0/client';
+  window.__blobUpload = upload;
+</script>
+
 <script>
 (function(){
 "use strict";
@@ -972,15 +978,18 @@ setInterval(function(){
 
 
 /* ââ BOL & Damage Photo State ââ */
-var _bolFile = null;   // {name, url, dataURL}
-var _dmgPhotos = [];   // [{name, dataURL}, ...]  max 10
+// New shape: {name, url}. Legacy shape preserved on read: {name, dataURL, url:dataURL}.
+var _bolFile = null;
+// New shape: [{name, url}, ...]. Legacy shape preserved on read: [{name, dataURL}, ...]. Max 10.
+var _dmgPhotos = [];
 
 function _buildDmgGrid(){
   var html = '';
   for(var i=0;i<10;i++){
     if(i < _dmgPhotos.length){
+      var dmgSrc = _dmgPhotos[i].url || _dmgPhotos[i].dataURL;
       html += '<div class="dmg-slot" data-dmg="'+i+'">'+
-        '<img src="'+_dmgPhotos[i].dataURL+'" alt="Damage '+(i+1)+'">'+
+        '<img src="'+dmgSrc+'" alt="Damage '+(i+1)+'">'+
         '<button class="dmg-del" data-deldmg="'+i+'" title="Remove">&#10005;</button>'+
         '</div>';
     } else if(i === _dmgPhotos.length){
@@ -1016,20 +1025,21 @@ function _bindDmgEvents(){
       if(_dmgPhotos.length >= 10){ toast('Maximum 10 damage photos'); input.value = ''; return; }
       var fileName = f.name;
       var isImage = f.type && f.type.indexOf('image/') === 0;
-      var afterRead = isImage
-        ? compressImage(f, 1600, 0.75)
-        : new Promise(function(resolve, reject){
-            var r = new FileReader();
-            r.onload = function(e){ resolve(e.target.result); };
-            r.onerror = function(){ reject(new Error('Could not read file')); };
-            r.readAsDataURL(f);
-          });
-      afterRead.then(function(dataURL){
-        _dmgPhotos.push({name: fileName, dataURL: dataURL});
+      // Compress large images (>500 KB) before upload; small images and PDFs upload as-is.
+      var prep = (isImage && f.size > 500 * 1024)
+        ? compressImage(f, 1600, 0.75).then(function(blob){
+            return new File([blob], fileName.replace(/\.[^.]+$/, '') + '.jpg', {type:'image/jpeg'});
+          })
+        : Promise.resolve(f);
+      toast('Uploading photo…');
+      prep.then(function(prepared){
+        return uploadAttachment(prepared, prepared.name || fileName);
+      }).then(function(rec){
+        _dmgPhotos.push(rec);
         _refreshDmgGrid();
-        toast('Photo added');
+        toast('Photo uploaded');
       }).catch(function(err){
-        toast('Photo failed: ' + (err && err.message ? err.message : 'unknown error'));
+        toast('Upload failed: ' + (err && err.message ? err.message : 'unknown error'));
       });
       input.value = '';
     };
@@ -1057,14 +1067,14 @@ function _viewDmgPhoto(idx){
   var div = document.createElement('div');
   div.className = 'dmg-photo-view';
   var img = document.createElement('img');
-  img.src = _dmgPhotos[idx].dataURL;
+  img.src = _dmgPhotos[idx].url || _dmgPhotos[idx].dataURL;
   div.appendChild(img);
   div.onclick = function(){ document.body.removeChild(div); };
   document.body.appendChild(div);
 }
 
-// Compress an image File to a JPEG dataURL no larger than MAX_DIM on the long side.
-// Returns a Promise resolving to the dataURL string.
+// Compress an image File to a JPEG Blob no larger than MAX_DIM on the long side.
+// Returns a Promise resolving to a Blob.
 function compressImage(file, maxDim, quality){
   maxDim = maxDim || 1600;
   quality = quality || 0.75;
@@ -1081,7 +1091,10 @@ function compressImage(file, maxDim, quality){
         var ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, cw, ch);
         try {
-          resolve(canvas.toDataURL('image/jpeg', quality));
+          canvas.toBlob(function(blob){
+            if(!blob) return reject(new Error('Could not encode image'));
+            resolve(blob);
+          }, 'image/jpeg', quality);
         } catch(err) {
           reject(err);
         }
@@ -1094,6 +1107,24 @@ function compressImage(file, maxDim, quality){
   });
 }
 
+// Upload a File/Blob to Vercel Blob via the client SDK and our /api/blob-upload route.
+// Returns a normalized attachment record { name, url, blob:true, size, contentType }.
+async function uploadAttachment(file, name){
+  if(!window.__blobUpload) throw new Error('Blob SDK not ready');
+  var fileName = name || file.name || ('attachment-' + Date.now());
+  var result = await window.__blobUpload(fileName, file, {
+    access: 'public',
+    handleUploadUrl: '/api/blob-upload',
+  });
+  return {
+    name: fileName,
+    url: result.url,
+    blob: true,
+    size: file.size,
+    contentType: file.type || ''
+  };
+}
+
 function _bindBolEvents(){
   var bolUpBtn = document.getElementById('bolUploadBtn');
   var bolCamBtn = document.getElementById('bolCameraBtn');
@@ -1104,28 +1135,23 @@ function _bindBolEvents(){
   function handleBolFile(file){
     if(!file) return;
     var isImage = file.type && file.type.indexOf('image/') === 0;
-    var isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
-
-    // Hard reject PDFs over 1 MB — we can't compress these client-side
-    if (isPdf && file.size > 1024 * 1024) {
-      toast('PDF too large — keep under 1 MB or convert to an image');
-      return;
-    }
-
-    var afterRead = isImage
-      ? compressImage(file, 1600, 0.75)
-      : new Promise(function(resolve, reject){
-          var r = new FileReader();
-          r.onload = function(e){ resolve(e.target.result); };
-          r.onerror = function(){ reject(new Error('Could not read file')); };
-          r.readAsDataURL(file);
-        });
-    afterRead.then(function(dataURL){
-      _bolFile = {name: file.name, dataURL: dataURL, url: dataURL};
+    var fileName = file.name;
+    // Compress large images (>500 KB) before upload; small images and PDFs upload as-is.
+    // Blob route caps at 10 MB; PDFs ride that limit directly.
+    var prep = (isImage && file.size > 500 * 1024)
+      ? compressImage(file, 1600, 0.75).then(function(blob){
+          return new File([blob], fileName.replace(/\.[^.]+$/, '') + '.jpg', {type:'image/jpeg'});
+        })
+      : Promise.resolve(file);
+    toast('Uploading BOL…');
+    prep.then(function(prepared){
+      return uploadAttachment(prepared, prepared.name || fileName);
+    }).then(function(rec){
+      _bolFile = rec;
       _refreshBolPreview();
-      toast('BOL attached');
+      toast('BOL uploaded');
     }).catch(function(err){
-      toast('BOL failed: ' + (err && err.message ? err.message : 'unknown error'));
+      toast('Upload failed: ' + (err && err.message ? err.message : 'unknown error'));
     });
   }
 
@@ -1236,13 +1262,15 @@ function openArchivedPO(p){
     dmgHtml = '<div class="attach-section" style="margin-top:16px"><label style="font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-family:"Saira Condensed",sans-serif;display:block;margin-bottom:6px">Damage Photos</label>'+
     '<div class="dmg-grid">'+
     p.dmgPhotos.map(function(ph,i){
-      return '<div class="dmg-slot" style="cursor:zoom-in" onclick="(function(){var d=document.createElement(\'div\');d.className=\'dmg-photo-view\';var im=document.createElement(\'img\');im.src=\'\'+ph.dataURL+\'\';d.appendChild(im);d.onclick=function(){document.body.removeChild(d);};document.body.appendChild(d);})()">'+
-        '<img src="'+ph.dataURL+'" alt="Damage '+(i+1)+'"></div>';
+      var phSrc = ph.url || ph.dataURL;
+      return '<div class="dmg-slot" style="cursor:zoom-in" onclick="(function(){var d=document.createElement(\'div\');d.className=\'dmg-photo-view\';var im=document.createElement(\'img\');im.src=\''+phSrc+'\';d.appendChild(im);d.onclick=function(){document.body.removeChild(d);};document.body.appendChild(d);})()">'+
+        '<img src="'+phSrc+'" alt="Damage '+(i+1)+'"></div>';
     }).join('')+
     '</div></div>';
   }
+  var bolHref = p.bolFile ? (p.bolFile.url || p.bolFile.dataURL) : '';
   var bolHtml = p.bolFile ?
-    '<div class="bol-preview" style="margin-top:8px"><span>&#128196;</span><a href="'+p.bolFile.dataURL+'" download="'+esc(p.bolFile.name)+'">'+esc(p.bolFile.name)+'</a></div>' :
+    '<div class="bol-preview" style="margin-top:8px"><span>&#128196;</span><a href="'+bolHref+'" download="'+esc(p.bolFile.name)+'">'+esc(p.bolFile.name)+'</a></div>' :
     '<div class="bol-placeholder" style="margin-top:4px">No BOL attached</div>';
 
   document.getElementById('modalHost').innerHTML = '<div class="modal">'+
