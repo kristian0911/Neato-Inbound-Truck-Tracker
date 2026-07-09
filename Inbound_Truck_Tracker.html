@@ -348,7 +348,7 @@ var lastWriteAt = 0;                      // monotonic timestamp of most recent 
 var WRITE_GRACE_MS = 15000;               // poll-suppress window after a local write
 
 var store={
-  getJSON:function(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d;}catch(e){return d;}},
+  getJSON:function(k,d){try{var v=localStorage.getItem(k);if(v==null)return d;var parsed=JSON.parse(v);return parsed===null?d:parsed;}catch(e){return d;}},
   setLocal:function(k,o){try{localStorage.setItem(k,JSON.stringify(o));}catch(e){}},
   setJSON:function(k,o){
     try{localStorage.setItem(k,JSON.stringify(o));}catch(e){}
