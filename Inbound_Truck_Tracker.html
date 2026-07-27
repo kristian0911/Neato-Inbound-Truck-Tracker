@@ -625,7 +625,7 @@ function openModal(id){
       '<div class="field"><label>Arrival Window (2 hr)</label><select id="fWindow"><option value="">Not scheduled</option>'+TIME_SLOTS.map(function(t){return'<option value="'+t.v+'"'+(p.arrivalWindow===t.v?' selected':'')+'>'+t.l+'</option>';}).join('')+'</select></div>'+
     '</div>'+
     '<div class="field-row">'+
-      '<div class="field full"><label>PO Status Note</label><input id="fNoteShort" value="" placeholder="Quick noteâ¦"></div>'+
+      '<div class="field full"><label>PO Status Note</label><input id="fNoteShort" value="'+esc(p.statusNote||"")+'" placeholder="Quick note…"></div>'+
     '</div>'+
     '<div class="field"><label>Notes</label><textarea id="fNotes">'+esc(p.notes)+'</textarea></div>'+
         '<div class="field full attach-section"><label>Bill of Lading (BOL)</label>'+
@@ -708,6 +708,7 @@ function savePO(){
   p.dock=(document.getElementById("fDock").value||"").trim();
   p.arrivalWindow=document.getElementById("fWindow").value||"";
   p.notes=(document.getElementById("fNotes").value||"").trim();
+  p.statusNote=(document.getElementById("fNoteShort").value||"").trim();
   p.status=_pendingStatus||p.status;
   if(p.status==="complete"&&!p.completedAt)p.completedAt=Date.now();
   if(!p.po){toast("PO number is required");return;}
