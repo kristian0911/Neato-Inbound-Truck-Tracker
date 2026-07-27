@@ -1425,6 +1425,25 @@ function openArchivedPO(p){
     }
   })();
 })();
+  // v2: strip dead duplicate bolFile.url data-URIs (reads use dataURL now)
+(async function () {
+  if (localStorage.getItem('urlDedupeDone_v2')) return;
+  try {
+    ['pos', 'archive'].forEach(function (key) {
+      var arr = getJSON(key, []);
+      if (!Array.isArray(arr)) return;
+      arr.forEach(function (rec) {
+        if (rec && rec.bolFile && typeof rec.bolFile.url === 'string'
+            && rec.bolFile.url.indexOf('data:') === 0) {
+          delete rec.bolFile.url;   // dead copy — app reads bolFile.dataURL
+        }
+      });
+      setJSON(key, arr);
+    });
+    localStorage.setItem('urlDedupeDone_v2', '1');
+    console.log('[migration v2] dropped duplicate bolFile.url copies');
+  } catch (e) { console.warn('[migration v2] failed', e); }
+})();
 </script>
 </body>
 </html>
