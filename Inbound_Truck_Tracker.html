@@ -632,7 +632,7 @@ function openModal(id){
       '<button type="button" class="btn sm" id="bolUploadBtn">&#128196; Upload File</button>'+
       '<button type="button" class="btn sm" id="bolCameraBtn">&#128247; Take Photo</button>'+
     '</div>'+
-    (_bolFile?'<div class="bol-preview"><span>&#128196;</span><a href="'+_bolFile.url+'" download="'+esc(_bolFile.name)+'">'+esc(_bolFile.name)+'</a><button id="bolRemoveBtn" title="Remove">&#10005;</button></div>':'<div class="bol-placeholder">No BOL attached</div>')+
+    (_bolFile?'<div class="bol-preview"><span>&#128196;</span><a href="'+_bolFile.dataURL+'" download="'+esc(_bolFile.name)+'">'+esc(_bolFile.name)+'</a><button id="bolRemoveBtn" title="Remove">&#10005;</button></div>':'<div class="bol-placeholder">No BOL attached</div>')+
     '<input type="file" id="bolFileIn" accept="image/*,.pdf" style="display:none">'+
     '<input type="file" id="bolCamIn" accept="image/*" capture="environment" style="display:none">'+
     '</div>'+
@@ -1017,7 +1017,7 @@ function _bindDmgEvents(){
       var fileName = f.name;
       var isImage = f.type && f.type.indexOf('image/') === 0;
       var afterRead = isImage
-        ? compressImage(f, 1600, 0.75)
+        ? compressImage(f, 1200, 0.6)
         : new Promise(function(resolve, reject){
             var r = new FileReader();
             r.onload = function(e){ resolve(e.target.result); };
@@ -1113,7 +1113,7 @@ function _bindBolEvents(){
     }
 
     var afterRead = isImage
-      ? compressImage(file, 1600, 0.75)
+      ? compressImage(file, 1200, 0.6)
       : new Promise(function(resolve, reject){
           var r = new FileReader();
           r.onload = function(e){ resolve(e.target.result); };
@@ -1121,7 +1121,7 @@ function _bindBolEvents(){
           r.readAsDataURL(file);
         });
     afterRead.then(function(dataURL){
-      _bolFile = {name: file.name, dataURL: dataURL, url: dataURL};
+      _bolFile = {name: file.name, dataURL: dataURL,  dataURL};
       _refreshBolPreview();
       toast('BOL attached');
     }).catch(function(err){
@@ -1151,7 +1151,7 @@ function _refreshBolPreview(){
   var newEl = document.createElement(_bolFile ? 'div' : 'div');
   if(_bolFile){
     newEl.className = 'bol-preview';
-    newEl.innerHTML = '<span>&#128196;</span><a href="'+_bolFile.url+'" download="'+esc(_bolFile.name)+'">'+esc(_bolFile.name)+'</a><button id="bolRemoveBtn" title="Remove">&#10005;</button>';
+    newEl.innerHTML = '<span>&#128196;</span><a href="'+_bolFile.dataURL+'" download="'+esc(_bolFile.name)+'">'+esc(_bolFile.name)+'</a><button id="bolRemoveBtn" title="Remove">&#10005;</button>';
     newEl.querySelector('#bolRemoveBtn').onclick = function(){ _bolFile=null; _refreshBolPreview(); };
   } else {
     newEl.className = 'bol-placeholder';
