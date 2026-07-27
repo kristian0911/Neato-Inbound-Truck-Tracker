@@ -16,7 +16,7 @@
   --yellow:#F5C518;--shadow:0 16px 40px -14px rgba(0,0,0,.85);
   --s-pending:#555552;--s-confirmed:#60A5FA;--s-transit:#FBBF24;
   --s-arrived:#F5C518;--s-unloading:#FB923C;--s-complete:#34D399;--s-overdue:#F87171;
-  --v-illy:#60A5FA;--v-ea:#34D399;--v-kennys:#FBBF24;--v-finleys:#C084FC;--v-surefire:#FB923C;
+  --v-illy:#60A5FA;--v-ea:#34D399;--v-kennys:#FBBF24;--v-finleys:#C084FC;--v-surefire:#FB923C;--v-mtolive:#2DD4BF;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;min-height:100%}
@@ -114,6 +114,7 @@ tr:hover td{background:rgba(245,197,24,.025);cursor:pointer}
 .v-kennys{background:rgba(251,191,36,.14);color:#FBBF24}
 .v-finleys{background:rgba(192,132,252,.14);color:#C084FC}
 .v-surefire{background:rgba(251,146,60,.14);color:#FB923C}
+.v-mtolive{background:rgba(45,212,191,.14);color:#2DD4BF}
 .v-other{background:rgba(136,136,128,.14);color:var(--muted)}
 
 /* CONFIDENCE */
@@ -268,6 +269,7 @@ tr:hover td{background:rgba(245,197,24,.025);cursor:pointer}
       <button data-vendor="SureFire">SureFire</button>
                 <button data-vendor="Kennys">Kennys</button>
                 <button data-vendor="Finleys">Finleys</button>
+      <button data-vendor="MT Olive">MT Olive</button>
       <button data-vendor="other">Other</button>
     </div>
     <input class="search-box" id="searchBox" placeholder="&#128269; Search PO, vendor, description…">
@@ -445,7 +447,7 @@ function fmtConf(c){
   if(c==="tbd")return'<span class="conf-tbd">TBD</span>';
   return'<span class="conf-tent">Tentative</span>';
 }
-function vendorClass(v){var m={"Illy":"illy","EA":"ea","Kennys":"kennys","Finleys":"finleys","SureFire":"surefire"};return m[v]||"other";}
+function vendorClass(v){var m={"Illy":"illy","EA":"ea","Kennys":"kennys","Finleys":"finleys","SureFire":"surefire","MT Olive":"mtolive"};return m[v]||"other";}
 function statusClass(p){return isOverdue(p)?"s-overdue":"s-"+p.status;}
 function statusLabel(p){
   if(isOverdue(p))return"Overdue";
