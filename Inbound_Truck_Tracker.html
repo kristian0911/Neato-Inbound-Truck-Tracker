@@ -964,7 +964,7 @@ document.getElementById("importBtn").onclick=openImportModal;
 document.getElementById("exportBtn").onclick=exportCSV;
 document.getElementById("archiveBtn").onclick=openArchive;
 document.getElementById("searchBox").addEventListener("input",function(){searchTerm=this.value.trim();render();});
-document.getElementById("overlay").addEventListener("click",function(e){if(e.target.id==="overlay")closeModal();});
+(function(){var ov=document.getElementById("overlay"),ds=null;ov.addEventListener("pointerdown",function(e){ds=e.target;});ov.addEventListener("click",function(e){if(e.target.id==="overlay"&&ds&&ds.id==="overlay")closeModal();ds=null;});})();
 
 /* ââ clock ââ */
 setInterval(function(){
