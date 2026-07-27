@@ -1369,5 +1369,62 @@ function openArchivedPO(p){
 })();
 })();
 </script>
+<script>
+// ONE-TIME MIGRATION: recompress oversized existing images. Safe to leave in;
+// it self-disables after running once via the "imgMigrationDone_v1" flag.
+(function () {
+  if (localStorage.getItem('imgMigrationDone_v1')) return;
+
+  function shrink(dataURL, maxDim, quality) {
+    return new Promise(function (resolve) {
+      if (typeof dataURL !== 'string' || dataURL.indexOf('data:image') !== 0) return resolve(dataURL);
+      if (dataURL.length < 250 * 1024) return resolve(dataURL); // already small enough
+      var img = new Image();
+      img.onload = function () {
+        var w = img.width, h = img.height;
+        if (Math.max(w, h) > maxDim) { var s = maxDim / Math.max(w, h); w = Math.round(w * s); h = Math.round(h * s); }
+        var c = document.createElement('canvas'); c.width = w; c.height = h;
+        c.getContext('2d').drawImage(img, 0, 0, w, h);
+        var out = c.toDataURL('image/jpeg', quality);
+        resolve(out.length < dataURL.length ? out : dataURL); // never make it bigger
+      };
+      img.onerror = function () { resolve(dataURL); };
+      img.src = dataURL;
+    });
+  }
+
+  async function migrateKey(key) {
+    var arr;
+    try { arr = getJSON(key, []); } catch (e) { return; }
+    if (!Array.isArray(arr) || !arr.length) return;
+    for (var i = 0; i < arr.length; i++) {
+      var rec = arr[i];
+      if (rec && rec.bolFile && typeof rec.bolFile.dataURL === 'string') {
+        rec.bolFile.dataURL = await shrink(rec.bolFile.dataURL, 1200, 0.6);
+        if (typeof rec.bolFile.url === 'string') rec.bolFile.url = rec.bolFile.dataURL;
+      }
+      if (Array.isArray(rec && rec.dmgPhotos)) {
+        for (var j = 0; j < rec.dmgPhotos.length; j++) {
+          var p = rec.dmgPhotos[j];
+          if (typeof p === 'string') rec.dmgPhotos[j] = await shrink(p, 1200, 0.6);
+          else if (p && typeof p.dataURL === 'string') p.dataURL = await shrink(p.dataURL, 1200, 0.6);
+        }
+      }
+    }
+    setJSON(key, arr);
+  }
+
+  (async function () {
+    try {
+      await migrateKey('pos');
+      await migrateKey('archive');
+      localStorage.setItem('imgMigrationDone_v1', '1');
+      console.log('[migration] existing images recompressed');
+    } catch (e) {
+      console.warn('[migration] failed, will retry next load', e);
+    }
+  })();
+})();
+</script>
 </body>
 </html>
