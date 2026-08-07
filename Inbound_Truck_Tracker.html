@@ -525,7 +525,7 @@ function renderTable(list){
       '<td>'+fmtWindow(p.arrivalWindow)+'</td>'+
       '<td>'+fmtConf(p.conf)+'</td>'+
       '<td>'+(p.arrivedAt?'<span class="mono" style="font-size:12px;color:var(--s-arrived)">&#9679; '+fmtTs(p.arrivedAt)+'</span>':'<span style="color:var(--faint)">—</span>')+'</td>'+
-      '<td style="text-align:right"><button class="btn sm" data-edit="'+p.id+'">&#9998; Edit</button></td>'+
+      '<td style="text-align:right">'+(p.status==="complete"?'<button class="btn sm" data-archive="'+p.id+'">&#128190; Archive</button> ':'')+'<button class="btn sm" data-edit="'+p.id+'">&#9998; Edit</button></td>'+
     '</tr>';
   }).join("");
   document.getElementById("mainContent").innerHTML=
@@ -571,7 +571,7 @@ function renderTimeline(list){
         '<td>'+fmtConf(p.conf)+'</td>'+
         '<td>'+(p.dock?'<span style="color:var(--muted);font-size:12px">Door '+esc(p.dock)+'</span>':'')+'</td>'+
         '<td>'+(p.arrivedAt?'<span class="mono" style="font-size:12px;color:var(--s-arrived)">&#9679; '+fmtTs(p.arrivedAt)+'</span>':'')+'</td>'+
-        '<td style="text-align:right"><button class="btn sm" data-edit="'+p.id+'">&#9998; Edit</button></td>'+
+        '<td style="text-align:right">'+(p.status==="complete"?'<button class="btn sm" data-archive="'+p.id+'">&#128190; Archive</button> ':'')+'<button class="btn sm" data-edit="'+p.id+'">&#9998; Edit</button></td>'+
       '</tr>';
     });
   });
@@ -701,7 +701,7 @@ function autoArchiveStale(){
   store.setJSON("pos", pos);
 }
 
-function savePO(){
+function archivePO(id){var p=pos.find(function(x){return x.id===id;});if(!p)return;if(!confirm('Archive PO '+p.po+'? It will be moved to the archive.'))return;var arch=store.getJSON("archive",[]);var existIdx=arch.findIndex(function(x){return x.id===p.id;});if(existIdx>=0)arch[existIdx]=p;else arch.push(p);store.setJSON("archive",arch);pos=pos.filter(function(x){return x.id!==id;});store.setJSON("pos",pos);render();toast('PO '+p.po+' archived');} function savePO(){
   var isNew=!editId;
   var p=isNew?{id:"po"+Date.now(),arrivedAt:null,completedAt:null}:pos.find(function(x){return x.id===editId;});
   p.po=(document.getElementById("fPO").value||"").trim();
@@ -953,11 +953,11 @@ function exportCSV(){
 
 /* ââ events ââ */
 document.addEventListener("click",function(e){
-  var t=e.target.closest("[data-view],[data-vendor],[data-edit],[data-id]");
+  var t=e.target.closest("[data-view],[data-vendor],[data-edit],[data-archive],[data-id]");
   if(!t)return;
   if(t.dataset.view){curView=t.dataset.view;document.querySelectorAll("[data-view]").forEach(function(b){b.classList.toggle("active",b.dataset.view===curView)});render();return;}
   if(t.dataset.vendor){curVendor=t.dataset.vendor;document.querySelectorAll("[data-vendor]").forEach(function(b){b.classList.toggle("active",b.dataset.vendor===curVendor)});render();return;}
-  if(t.dataset.edit){openModal(t.dataset.edit);return;}
+  if(t.dataset.archive){archivePO(t.dataset.archive);return;} if(t.dataset.edit){openModal(t.dataset.edit);return;}
   if(t.dataset.id&&!t.dataset.edit){openModal(t.dataset.id);return;}
   // Row click
   var row=e.target.closest("tr[data-id]");
