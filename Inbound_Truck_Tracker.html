@@ -596,7 +596,7 @@ var CONF_OPTS=[{v:"tentative",l:"Tentative"},{v:"confirmed",l:"Confirmed"},{v:"t
 
 function openModal(id){
   editId=id;
-  var p=editArchiveId?store.getJSON('archive',[]).find(function(x){return x.id===editArchiveId;}):id?pos.find(function(x){return x.id===id;}):{id:null,po:"",vendor:"Illy",desc:"",eta:"",conf:"tentative",status:"pending",arrivedAt:null,completedAt:null,dock:"",notes:"",arrivalWindow:""};
+  var p=editArchiveId?store.getJSON('archive',[]).find(function(x){return x.id===editArchiveId;}):id?pos.find(function(x){return x.id===id;}):{id:null,po:"",vendor:"",desc:"",eta:"",conf:"tentative",status:"pending",arrivedAt:null,completedAt:null,dock:"",notes:"",arrivalWindow:""};
   _bolFile = p.bolFile || null;
   _dmgPhotos = (p.dmgPhotos || []).slice();
   var stepBtns=STATUSES.map(function(s){
