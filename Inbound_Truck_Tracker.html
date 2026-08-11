@@ -116,6 +116,7 @@ tr:hover td{background:rgba(245,197,24,.025);cursor:pointer}
 .v-surefire{background:rgba(251,146,60,.14);color:#FB923C}
 .v-mtolive{background:rgba(45,212,191,.14);color:#2DD4BF}
   .v-heartbeat{background:rgba(248,113,113,.14);color:#F87171}
+.v-giants{background:rgba(129,140,248,.14);color:#818CF8}
 .v-other{background:rgba(136,136,128,.14);color:var(--muted)}
 
 /* CONFIDENCE */
@@ -272,6 +273,7 @@ tr:hover td{background:rgba(245,197,24,.025);cursor:pointer}
                 <button data-vendor="Finleys">Finleys</button>
       <button data-vendor="MT Olive">MT Olive</button>
       <button data-vendor="Heartbeat">Heartbeat</button>
+      <button data-vendor="Giants">Giants</button>
       <button data-vendor="other">Other</button>
     </div>
     <input class="search-box" id="searchBox" placeholder="&#128269; Search PO, vendor, description…">
@@ -449,7 +451,7 @@ function fmtConf(c){
   if(c==="tbd")return'<span class="conf-tbd">TBD</span>';
   return'<span class="conf-tent">Tentative</span>';
 }
-function vendorClass(v){var m={"Illy":"illy","EA":"ea","Kennys":"kennys","Finleys":"finleys","SureFire":"surefire","MT Olive":"mtolive","Heartbeat":"heartbeat"};return m[v]||"other";}
+function vendorClass(v){var m={"Illy":"illy","EA":"ea","Kennys":"kennys","Finleys":"finleys","SureFire":"surefire","MT Olive":"mtolive","Heartbeat":"heartbeat","Giants":"giants"};return m[v]||"other";}
 function statusClass(p){return isOverdue(p)?"s-overdue":"s-"+p.status;}
 function statusLabel(p){
   if(isOverdue(p))return"Overdue";
