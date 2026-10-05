@@ -16,7 +16,7 @@
   --yellow:#F5C518;--shadow:0 16px 40px -14px rgba(0,0,0,.85);
   --s-pending:#555552;--s-confirmed:#60A5FA;--s-transit:#FBBF24;
   --s-arrived:#F5C518;--s-unloading:#FB923C;--s-complete:#34D399;--s-overdue:#F87171;
-  --v-illy:#60A5FA;--v-ea:#34D399;--v-kennys:#FBBF24;--v-tuffys:#C084FC;--v-surefire:#FB923C;--v-mtolive:#2DD4BF;
+  --v-illy:#60A5FA;--v-ea:#34D399;--v-kennys:#FBBF24;--v-tuffys:#C084FC;--v-surefire:#FB923C;--v-mtolive:#2DD4BF;--v-mwyn:#F472B6;--v-libman:#A3E635;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;min-height:100%}
@@ -117,6 +117,8 @@ tr:hover td{background:rgba(245,197,24,.025);cursor:pointer}
 .v-mtolive{background:rgba(45,212,191,.14);color:#2DD4BF}
   .v-heartbeat{background:rgba(248,113,113,.14);color:#F87171}
 .v-giants{background:rgba(129,140,248,.14);color:#818CF8}
+.v-mwyn{background:rgba(244,114,182,.14);color:#F472B6}
+.v-libman{background:rgba(163,230,53,.14);color:#A3E635}
 .v-other{background:rgba(136,136,128,.14);color:var(--muted)}
 
 /* CONFIDENCE */
@@ -274,6 +276,8 @@ tr:hover td{background:rgba(245,197,24,.025);cursor:pointer}
       <button data-vendor="MT Olive">MT Olive</button>
       <button data-vendor="Heartbeat">Heartbeat</button>
       <button data-vendor="Giants">Giants</button>
+      <button data-vendor="M. WYN">M. WYN</button>
+      <button data-vendor="Libman">Libman</button>
       <button data-vendor="other">Other</button>
     </div>
     <input class="search-box" id="searchBox" placeholder="&#128269; Search PO, vendor, description…">
@@ -451,7 +455,7 @@ function fmtConf(c){
   if(c==="tbd")return'<span class="conf-tbd">TBD</span>';
   return'<span class="conf-tent">Tentative</span>';
 }
-function vendorClass(v){var m={"Illy":"illy","EA":"ea","Kennys":"kennys","Tuffys":"tuffys","SureFire":"surefire","MT Olive":"mtolive","Heartbeat":"heartbeat","Giants":"giants"};return m[v]||"other";}
+function vendorClass(v){var m={"Illy":"illy","EA":"ea","Kennys":"kennys","Tuffys":"tuffys","SureFire":"surefire","MT Olive":"mtolive","Heartbeat":"heartbeat","Giants":"giants","M. WYN":"mwyn","Libman":"libman"};return m[v]||"other";}
 function statusClass(p){return isOverdue(p)?"s-overdue":"s-"+p.status;}
 function statusLabel(p){
   if(isOverdue(p))return"Overdue";
@@ -478,7 +482,7 @@ function filtered(){
     if(curView==="complete"&&p.status!=="complete")return false;
     if(curView==="active"&&p.status==="pending"&&!isOverdue(p)&&p.conf==="tbd")return false;
     if(curVendor!=="all"&&curVendor!=="other"&&p.vendor!==curVendor)return false;
-    if(curVendor==="other"&&["Illy","EA","SureFire","Kennys","Tuffys"].indexOf(p.vendor)>=0)return false;
+    if(curVendor==="other"&&["Illy","EA","SureFire","Kennys","Tuffys","M. WYN","Libman"].indexOf(p.vendor)>=0)return false;
     if(searchTerm){var q=searchTerm.toLowerCase();if(p.po.indexOf(q)<0&&p.vendor.toLowerCase().indexOf(q)<0&&p.desc.toLowerCase().indexOf(q)<0)return false;}
     return true;
   });
