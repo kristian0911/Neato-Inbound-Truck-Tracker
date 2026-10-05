@@ -278,7 +278,6 @@ tr:hover td{background:rgba(245,197,24,.025);cursor:pointer}
       <button data-vendor="Giants">Giants</button>
       <button data-vendor="M. WYN">M. WYN</button>
       <button data-vendor="Libman">Libman</button>
-      <button data-vendor="other">Other</button>
     </div>
     <input class="search-box" id="searchBox" placeholder="&#128269; Search PO, vendor, description…">
     <div class="spacer"></div>
@@ -481,8 +480,7 @@ function filtered(){
     if(curView==="active"&&p.status==="complete")return false;
     if(curView==="complete"&&p.status!=="complete")return false;
     if(curView==="active"&&p.status==="pending"&&!isOverdue(p)&&p.conf==="tbd")return false;
-    if(curVendor!=="all"&&curVendor!=="other"&&p.vendor!==curVendor)return false;
-    if(curVendor==="other"&&vendorClass(p.vendor)!=="other")return false;
+    if(curVendor!=="all"&&p.vendor!==curVendor)return false;
     if(searchTerm){var q=searchTerm.toLowerCase();if(p.po.indexOf(q)<0&&p.vendor.toLowerCase().indexOf(q)<0&&p.desc.toLowerCase().indexOf(q)<0)return false;}
     return true;
   });
