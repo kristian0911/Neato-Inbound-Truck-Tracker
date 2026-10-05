@@ -16,7 +16,7 @@
   --yellow:#F5C518;--shadow:0 16px 40px -14px rgba(0,0,0,.85);
   --s-pending:#555552;--s-confirmed:#60A5FA;--s-transit:#FBBF24;
   --s-arrived:#F5C518;--s-unloading:#FB923C;--s-complete:#34D399;--s-overdue:#F87171;
-  --v-illy:#60A5FA;--v-ea:#34D399;--v-kennys:#FBBF24;--v-finleys:#C084FC;--v-surefire:#FB923C;--v-mtolive:#2DD4BF;
+  --v-illy:#60A5FA;--v-ea:#34D399;--v-kennys:#FBBF24;--v-tuffys:#C084FC;--v-surefire:#FB923C;--v-mtolive:#2DD4BF;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;min-height:100%}
@@ -112,7 +112,7 @@ tr:hover td{background:rgba(245,197,24,.025);cursor:pointer}
 .v-illy{background:rgba(96,165,250,.14);color:#60A5FA}
 .v-ea{background:rgba(52,211,153,.14);color:#34D399}
 .v-kennys{background:rgba(251,191,36,.14);color:#FBBF24}
-.v-finleys{background:rgba(192,132,252,.14);color:#C084FC}
+.v-tuffys{background:rgba(192,132,252,.14);color:#C084FC}
 .v-surefire{background:rgba(251,146,60,.14);color:#FB923C}
 .v-mtolive{background:rgba(45,212,191,.14);color:#2DD4BF}
   .v-heartbeat{background:rgba(248,113,113,.14);color:#F87171}
@@ -270,7 +270,7 @@ tr:hover td{background:rgba(245,197,24,.025);cursor:pointer}
       <button data-vendor="EA">EA</button>
       <button data-vendor="SureFire">SureFire</button>
                 <button data-vendor="Kennys">Kennys</button>
-                <button data-vendor="Finleys">Finleys</button>
+                <button data-vendor="Tuffys">Tuffys</button>
       <button data-vendor="MT Olive">MT Olive</button>
       <button data-vendor="Heartbeat">Heartbeat</button>
       <button data-vendor="Giants">Giants</button>
@@ -408,7 +408,7 @@ var DEFAULT_POS=[
   {id:"po770", po:"770", vendor:"Illy",     desc:"WB Class",               eta:"2026-06-08", conf:"tentative",  status:"pending",   arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:""},
   {id:"po771", po:"771", vendor:"Illy",     desc:"5 GC SKUs- 60 PALLETS",  eta:"2026-06-08", conf:"confirmed",  status:"confirmed", arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:"08:00"},
   {id:"po778", po:"778", vendor:"Kennys",   desc:"25 pallets",             eta:"2026-06-08", conf:"confirmed",  status:"confirmed", arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:""},
-  {id:"po779", po:"779", vendor:"Finleys",  desc:"2 pallets- with PO 779", eta:"2026-06-08", conf:"confirmed",  status:"confirmed", arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:""},
+  {id:"po779", po:"779", vendor:"Tuffys",  desc:"2 pallets- with PO 779", eta:"2026-06-08", conf:"confirmed",  status:"confirmed", arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:""},
   {id:"po780", po:"780", vendor:"EA",       desc:"11 plts",                eta:"2026-06-10", conf:"tentative",  status:"pending",   arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:""},
   {id:"po772", po:"772", vendor:"Illy",     desc:"NC + IE/ESE/IC",         eta:"2026-06-12", conf:"tentative",  status:"pending",   arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:""},
   {id:"po773", po:"773", vendor:"Illy",     desc:"WB + GC",                eta:"2026-06-12", conf:"tentative",  status:"pending",   arrivedAt:null, completedAt:null, dock:"", notes:"",arrivalWindow:""},
@@ -451,7 +451,7 @@ function fmtConf(c){
   if(c==="tbd")return'<span class="conf-tbd">TBD</span>';
   return'<span class="conf-tent">Tentative</span>';
 }
-function vendorClass(v){var m={"Illy":"illy","EA":"ea","Kennys":"kennys","Finleys":"finleys","SureFire":"surefire","MT Olive":"mtolive","Heartbeat":"heartbeat","Giants":"giants"};return m[v]||"other";}
+function vendorClass(v){var m={"Illy":"illy","EA":"ea","Kennys":"kennys","Tuffys":"tuffys","SureFire":"surefire","MT Olive":"mtolive","Heartbeat":"heartbeat","Giants":"giants"};return m[v]||"other";}
 function statusClass(p){return isOverdue(p)?"s-overdue":"s-"+p.status;}
 function statusLabel(p){
   if(isOverdue(p))return"Overdue";
@@ -478,7 +478,7 @@ function filtered(){
     if(curView==="complete"&&p.status!=="complete")return false;
     if(curView==="active"&&p.status==="pending"&&!isOverdue(p)&&p.conf==="tbd")return false;
     if(curVendor!=="all"&&curVendor!=="other"&&p.vendor!==curVendor)return false;
-    if(curVendor==="other"&&["Illy","EA","SureFire","Kennys","Finleys"].indexOf(p.vendor)>=0)return false;
+    if(curVendor==="other"&&["Illy","EA","SureFire","Kennys","Tuffys"].indexOf(p.vendor)>=0)return false;
     if(searchTerm){var q=searchTerm.toLowerCase();if(p.po.indexOf(q)<0&&p.vendor.toLowerCase().indexOf(q)<0&&p.desc.toLowerCase().indexOf(q)<0)return false;}
     return true;
   });
