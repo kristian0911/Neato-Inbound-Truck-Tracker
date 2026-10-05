@@ -482,7 +482,7 @@ function filtered(){
     if(curView==="complete"&&p.status!=="complete")return false;
     if(curView==="active"&&p.status==="pending"&&!isOverdue(p)&&p.conf==="tbd")return false;
     if(curVendor!=="all"&&curVendor!=="other"&&p.vendor!==curVendor)return false;
-    if(curVendor==="other"&&["Illy","EA","SureFire","Kennys","Tuffys","M. WYN","Libman"].indexOf(p.vendor)>=0)return false;
+    if(curVendor==="other"&&vendorClass(p.vendor)!=="other")return false;
     if(searchTerm){var q=searchTerm.toLowerCase();if(p.po.indexOf(q)<0&&p.vendor.toLowerCase().indexOf(q)<0&&p.desc.toLowerCase().indexOf(q)<0)return false;}
     return true;
   });
